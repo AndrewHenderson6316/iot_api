@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  typeName: MyString
+  scale: MyString
+  description: MyString
+
+two:
+  typeName: MyString
+  scale: MyString
+  description: MyString
