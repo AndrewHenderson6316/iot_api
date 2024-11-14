@@ -10,14 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_10_16_213234) do
+ActiveRecord::Schema[7.0].define(version: 2024_11_14_202710) do
   create_table "data_entries", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "value"
     t.integer "data_type_id", null: false
     t.integer "device_id", null: false
     t.integer "time_of_sample_id", null: false
+    t.float "value"
     t.index ["data_type_id"], name: "index_data_entries_on_data_type_id"
     t.index ["device_id"], name: "index_data_entries_on_device_id"
     t.index ["time_of_sample_id"], name: "index_data_entries_on_time_of_sample_id"
