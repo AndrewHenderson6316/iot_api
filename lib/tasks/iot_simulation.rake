@@ -6,62 +6,42 @@ namespace :iot do
   desc "Simulate IoT API Requests"
   task simulate: :environment do
     # Define the endpoint URL
-    endpoint_url = 'http://127.0.0.1:3000/api/v1/iot_data'
+    endpoint_url = 'http://127.0.0.1:3000/data_entries' # Ensure the endpoint matches your controller
 
     # Define a method to generate unique IoT device data
     def generate_device_data
       {
-        identification: {
-          endpointId: {
-            scope: {
-              type: "sample_type",
-              token: "sample_token"
-            },
-            endpointId: SecureRandom.uuid
+        data_entry: { # This wraps the data to match Rails strong parameters
+          value: rand(5..15).to_s, # Random value for simulation
+          data_type_attributes: {
+            typeName: "CARBON MONOXIDE",
+            scale: "PPM"
           },
-          manufacturer: "Sample Manufacturer",
-          model: "Sample Model"
-        },
-        data: [
-          {
-            type: "CARBON MONOXIDE",
-            time: Time.now.utc.iso8601,
-            value: {
-              value: rand(5..15).to_s,  # Random CO value for simulation
-              scale: "PPM"
-            }
+          time_of_sample_attributes: {
+            date: Time.now.utc.iso8601
           },
-          {
-            type: "TEMPERATURE",
-            time: Time.now.utc.iso8601,
-            value: {
-              value: (15 + rand * 10).round(1).to_s,  # Random temperature
-              scale: "CELSIUS"
-            }
+          device_attributes: {
+            manufacturer_name: "Sample Manufacturer",
+            firmware_version: "1.0.1",
+            model: "Sample Model"
           }
-        ]
+        }
       }
     end
 
+    # Define a method to generate metadata for the device
     def generate_device_metadata
       {
-        endpointId: SecureRandom.uuid,
-        manufacturerName: "Sample Manufacturer",
-        description: "Smart Light by Sample Manufacturer",
-        friendlyName: "Living Room Light",
-        categories: ["LIGHT"],
-        additionalAttributes: {
-          manufacturer: "Sample Manufacturer",
-          model: "Sample Model",
-          serialNumber: "12345ABC",
-          firmwareVersion: "1.0.1",
-          softwareVersion: "2.3.4",
-          customId: SecureRandom.hex(8)
-        },
-        capabilities: [],
-        connections: [],
-        relationships: {},
-        registration: {}
+        data_entry: { # This wraps the metadata to match Rails strong parameters
+          device_attributes: {
+            manufacturer_name: "Sample Manufacturer",
+            model: "Sample Model",
+            serial_number: "12345ABC",
+            firmware_version: "1.0.1",
+            friendly_name: "Living Room Light",
+            categories: "LIGHT"
+        }
+        }
       }
     end
 

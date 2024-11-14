@@ -15,7 +15,7 @@ class DataEntriesController < ApplicationController
   # POST /groups
   def create
     @data_entry = DataEntry.new(data_entry_params)
-    @data_type = @data_entry.build_dataType
+    @data_type = @data_entry.build_data_type
     @time_of_sample = @data_entry.build_time_of_sample
     @device = @data_entry.build_device
 
@@ -48,6 +48,29 @@ class DataEntriesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def data_entry_params
-      params.require(:data_entry).permit(:value,:data_type_id,:device_id,:time_of_sample_id,[:date,:data_entry_id],[:manufaturer_name,:firmware_version,:model, :data_entry_id ],[ :typeName,:scale,:data_entry_id])
+      params.require(:data_entry).permit(
+        :value,
+        :data_type_id,
+        :device_id,
+        :time_of_sample_id,
+        time_of_sample_attributes:[
+          :date
+        ],
+        device_attributes: [
+          :manufacturer_name,
+          :description,
+          :friendly_name,
+          :categories,
+          :serial_number,
+          :software_version,
+          :custom_id,
+          :firmware_version,
+          :model
+        ],
+        data_type_attributes: [
+          :typeName,
+          :scale
+        ]
+      )
     end
 end
