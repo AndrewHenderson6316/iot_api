@@ -10,9 +10,14 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "data_entries#index"
   resources :data_entries 
-    resources :data_types
+  resources :data_types
   
-    resources :time_of_sample
+  resources :time_of_sample
     
-    resources :devices
+  resources :devices
+
+  # Route for chart data
+  get 'raw_data', to: 'raw_data#index'
+  get 'all_data', to: 'all_data#index'
+
 end

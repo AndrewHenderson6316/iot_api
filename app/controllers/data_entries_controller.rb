@@ -15,16 +15,15 @@ class DataEntriesController < ApplicationController
   # POST /groups
   def create
     @data_entry = DataEntry.new(data_entry_params)
-    @data_type = @data_entry.build_data_type
-    @time_of_sample = @data_entry.build_time_of_sample
-    @device = @data_entry.build_device
-
+  
     if @data_entry.save
-      render json: @data_entry, status: :created, location: @data_entry
+      render json: @data_entry, status: :created
     else
-      render json: @data_entry.errors, status: :unprocessable_entity
+      Rails.logger.error("Validation Errors: #{@data_entry.errors.full_messages}")
+      render json: { errors: @data_entry.errors.full_messages }, status: :unprocessable_entity
     end
   end
+  
 
   # PATCH/PUT 
   def update
