@@ -22,6 +22,12 @@ class Api::V1::IotDataController < ApplicationController
         dev.software_version = data[:device][:software_version]
         dev.categories = data[:device][:categories]
       end
+      sensor = Sensor.find_or_create_by!(sensor_id: data[:sensor][:sensor_id]) do |dev|
+        dev.manufacturer_name = data[:sensor][:manufacturer_name]
+        dev.device_id = device.id
+        dev.serial_number = data[:device][:serial_number]
+        dev.category = data[:device][:category]
+      end
 
       time_of_sample = TimeOfSample.find_or_create_by!(date: data[:time_of_sample][:date])
 
@@ -30,7 +36,8 @@ class Api::V1::IotDataController < ApplicationController
         value: data[:value],
         data_type_id: data_type.id,
         device_id: device.id,
-        time_of_sample_id: time_of_sample.id
+        time_of_sample_id: time_of_sample.id,
+        sensor_id: sensor.id
       )
     end
 

@@ -19,6 +19,11 @@ class AllDataController < ApplicationController
           manufacturer_name: entry.device&.manufacturer_name,
           model: entry.device&.model,
           friendly_name: entry.device&.friendly_name
+        },
+        sensor: {
+          manufacturer_name: entry.sensor&.manufacturer_name,
+          serial_number: entry.sensor&.serial_number,
+          catagory: entry.sensor&.catagory
         }
       }
     end

@@ -15,7 +15,13 @@ class DataEntriesController < ApplicationController
   # POST /groups
   def create
     @data_entry = DataEntry.new(data_entry_params)
-  
+    @data_type = @data_entry.build_data_type
+    @time_of_sample = @data_entry.build_time_of_sample
+    @device = @data_entry.build_device
+    @sensor = @data_entry.build_sensor
+    @sensor.device_id = @device.id
+
+
     if @data_entry.save
       render json: @data_entry, status: :created
     else
@@ -70,12 +76,13 @@ class DataEntriesController < ApplicationController
           :typeName,
           :scale
         ],
-        data_sensor_attributes:[
+        sensor_attributes:[
           :manufacturer_name,
           :serial_number,
           :category,
           :created_at,
           :updated_at,
+          :device_id
         ]
       )
     end
