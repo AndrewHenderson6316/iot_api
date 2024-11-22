@@ -28,6 +28,7 @@
         <th>Value</th>
         <th>Device Name</th>
         <th>Sample Date</th>
+        <th>Sensor ID</th> <!-- New column for Sensor ID -->
       </tr>
     </thead>
     <tbody>
@@ -54,6 +55,7 @@
               <td>${row.value}</td>
               <td>${row.device_name}</td>
               <td>${row.sample_date}</td>
+              <td>${row.sensor_id}</td> <!-- Display Sensor ID -->
             `;
             tableBody.appendChild(tr);
           });
@@ -61,7 +63,7 @@
         .catch(error => {
           console.error('Error fetching data:', error);
           const tableBody = document.getElementById('data-table').querySelector('tbody');
-          tableBody.innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
+          tableBody.innerHTML = '<tr><td colspan="5">Error loading data</td></tr>'; <!-- Adjust colspan -->
         });
     });
   </script>

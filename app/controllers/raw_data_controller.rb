@@ -2,7 +2,11 @@ class RawDataController < ApplicationController
   def index
     # Execute raw SQL query to fetch all data from the `data_entries` table
     sql = <<-SQL
-      SELECT data_entries.*, devices.friendly_name AS device_name, time_of_samples.date AS sample_date
+      SELECT 
+        data_entries.*, 
+        devices.friendly_name AS device_name, 
+        time_of_samples.date AS sample_date,
+        data_entries.sensor_id AS sensor_id
       FROM data_entries
       LEFT JOIN devices ON devices.id = data_entries.device_id
       LEFT JOIN time_of_samples ON time_of_samples.id = data_entries.time_of_sample_id
@@ -16,7 +20,8 @@ class RawDataController < ApplicationController
         id: row['id'],
         value: row['value'],
         device_name: row['device_name'],
-        sample_date: row['sample_date']
+        sample_date: row['sample_date'],
+        sensor_id: row['sensor_id'] # Include sensor_id
       }
     end
 
