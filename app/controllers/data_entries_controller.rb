@@ -70,7 +70,7 @@ class DataEntriesController < ApplicationController
           :typeName,
           :scale
         ],
-        data_sensor_attributes:[
+        sensor_attributes:[
           :manufacturer_name,
           :serial_number,
           :category,
