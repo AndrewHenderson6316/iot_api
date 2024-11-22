@@ -18,6 +18,7 @@ class DataEntriesController < ApplicationController
     @data_type = @data_entry.build_data_type
     @time_of_sample = @data_entry.build_time_of_sample
     @device = @data_entry.build_device
+    @device.save
     @sensor = @data_entry.build_sensor
     @sensor.device_id = @device.id
 
