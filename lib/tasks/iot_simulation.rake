@@ -26,16 +26,15 @@ namespace :iot do
             firmware_version: "1.0.1",
             model: "Sample Model",
             serial_number: "12345ABC",
-            firmware_version: "1.0.1",
             friendly_name: "Living Room Light",
             categories: "LIGHT"
           },
           sensor_attributes: {
             manufacturer_name:"manufacturer_name",
             serial_number: "serial_number",
-            category: "category"
-            created_at: "created_at", null: false
-            updated_at: "updated_at", null: false
+            category: "category",
+            created_at: Time.now.utc.iso8601,
+            updated_at: Time.now.utc.iso8601
           }
 
           
