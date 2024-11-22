@@ -30,11 +30,11 @@ namespace :iot do
             categories: "LIGHT"
           },
           sensor_attributes: {
-            manufacturer_name:"manufacturer_name",
-            serial_number: "serial_number",
-            category: "category",
-            created_at: Time.now.utc.iso8601,
-            updated_at: Time.now.utc.iso8601
+          manufacturer_name:"manufacturer_name",
+          serial_number: "serial_number",
+          category: "category",
+          created_at: Time.now.utc.iso8601,
+          updated_at: Time.now.utc.iso8601
           }
 
           

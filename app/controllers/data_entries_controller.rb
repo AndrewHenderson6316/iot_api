@@ -69,6 +69,13 @@ class DataEntriesController < ApplicationController
         data_type_attributes: [
           :typeName,
           :scale
+        ],
+        data_sensor_attributes:[
+          :manufacturer_name,
+          :serial_number,
+          :category,
+          :created_at,
+          :updated_at,
         ]
       )
     end
