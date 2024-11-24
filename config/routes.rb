@@ -1,9 +1,4 @@
 Rails.application.routes.draw do
-  namespace :api do
-    namespace :v1 do
-      resources :iot_data, only: :create
-    end
-  end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -17,7 +12,8 @@ Rails.application.routes.draw do
   resources :devices
 
   # Route for chart data
-  get 'raw_data', to: 'raw_data#index'
-  get 'all_data', to: 'all_data#index'
-
+  #get 'raw_data', to: 'raw_data#index'
+  #get 'all_data', to: 'all_data#index'
+  get 'chart', to: 'data_entries#chart'
+  get 'chart2', to: 'data_entries#chart2'
 end

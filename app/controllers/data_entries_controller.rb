@@ -12,6 +12,14 @@ class DataEntriesController < ApplicationController
     render json: @data_entry
   end
 
+  def chart
+    @data_entries = DataEntry.includes(:device, :data_type, :sensor, :time_of_sample).all
+    
+    @message = "Hello World" # Pass the message to the view
+    render "data_entries/chart"
+    
+  end
+
   # POST /groups
   def create
     # Permit nested parameters for data creation

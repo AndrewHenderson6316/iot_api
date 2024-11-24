@@ -1,69 +1,107 @@
-# lib/tasks/iot_simulation.rake
 require 'httparty'
 require 'json'
 
-  desc "Simulate IoT API Requests"
-  task simulate: :environment do
-    # Define the endpoint URL
-    endpoint_url = 'http://127.0.0.1:3000/data_entries' # Ensure the endpoint matches your controller
+# Define the devices and sensors
+devices = [
+  {
+    custom_id: "device_01",
+    manufacturer_name: "manufacturer1",
+    friendly_name: "My Device 1",
+    model: "Model X",
+    serial_number: "d014321",
+    firmware_version: "v1.0",
+    software_version: "v1.1",
+    categories: "temperature air_quality",
+    description: "device that captures temperature and air quality",
+    sensors: [
+      { manufacturer_name: "manufacturer1", serial_number: "s014321", category: "temperature" },
+      { manufacturer_name: "manufacturer2", serial_number: "s024321", category: "air quality" }
+    ]
+  },
+  {
+    custom_id: "device_02",
+    manufacturer_name: "manufacturer1",
+    friendly_name: "My Device 2",
+    model: "Model Y",
+    serial_number: "d024321",
+    firmware_version: "v2.0",
+    software_version: "v2.1",
+    categories: "temperature air_quality",
+    description: "device that captures temperature and air quality",
+    sensors: [
+      { manufacturer_name: "manufacturer3", serial_number: "s034321", category: "temperature" },
+      { manufacturer_name: "manufacturer4", serial_number: "s044321", category: "air quality" }
+    ]
+  },
+  {
+    custom_id: "device_03",
+    manufacturer_name: "manufacturer1",
+    friendly_name: "My Device 3",
+    model: "Model Z",
+    serial_number: "d034321",
+    firmware_version: "v3.0",
+    software_version: "v3.1",
+    categories: "temperature air_quality",
+    description: "device that captures temperature and air quality",
+    sensors: [
+      { manufacturer_name: "manufacturer5", serial_number: "s054321", category: "temperature" },
+      { manufacturer_name: "manufacturer6", serial_number: "s064321", category: "air quality" }
+    ]
+  }
+]
 
-    # Define a method to generate random IoT device data
-    def generate_device_data
-      custom_ids =["object 1", "name of thing", "this is a name"]
-      manufacturer_names = ["Manufacturer A", "Manufacturer B", "Manufacturer C"]
-      friendly_names = ["Living Room Sensor", "Bedroom Light", "Kitchen Monitor"]
-      categories = ["LIGHT", "TEMPERATURE", "AIR_QUALITY"]
-      models = ["Model X", "Model Y", "Model Z"]
-      serial_numbers = Array.new(10) { (0...8).map { (65 + rand(26)).chr }.join }
-      type_names = ["CARBON MONOXIDE", "TEMPERATURE", "HUMIDITY"]
-      scales = ["PPM", "C", "%"]
-      puts friendly_names.sample
-      {
-        data_entry: {
-          value: rand(5..15).to_s, # Random value for simulation
-          data_type_attributes: {
-            typeName: type_names.sample,
-            scale: scales.sample
-          },
-          time_of_sample_attributes: {
-            date: Time.now.utc.iso8601
-          },
-          device_attributes: {
-            manufacturer_name: manufacturer_names.sample,
-            firmware_version: "1.#{rand(0..9)}.#{rand(0..9)}",
-            software_version: "1.#{rand(0..9)}.#{rand(0..9)}",
-            model: models.sample,
-            serial_number: serial_numbers.sample,
-            friendly_name: friendly_names.sample,
-            categories: categories.sample,
-            custom_id: custom_ids.sample,
-            description: "description",
-            catagories: "words words words"
-          },
-          sensor_attributes: {
-            manufacturer_name: manufacturer_names.sample,
-            serial_number: serial_numbers.sample,
-            category: categories.sample,
-            created_at: Time.now.utc.iso8601,
-            updated_at: Time.now.utc.iso8601
-          }
-        }
-      }
-    end
-
-    # Loop to send multiple simulated requests
-    10.times do |i|
-      # Generate data
-      payload = generate_device_data
-
-      # Post data payload
-      response = HTTParty.post(endpoint_url, 
-                               body: payload.to_json,
-                               headers: { 'Content-Type' => 'application/json' })
-
-      puts "Request ##{i + 1} - Status: #{response.code} - Response: #{response.body}"
-
-      # Add a short delay to avoid hitting the API too quickly
-      sleep(1)
-    end
+# Function to generate random data based on sensor type
+def generate_random_value(category)
+  case category
+  when "temperature"
+    rand(15..30) # Temperature in Celsius
+  when "air quality"
+    rand(0..100) # Air Quality Index (AQI)
+  else
+    rand(1..50) # Default random value
   end
+end
+
+# Function to generate a payload
+def generate_payload(devices)
+  selected_device = devices.sample # Select a random device
+  selected_sensor = selected_device[:sensors].sample # Select a random sensor from the device
+
+  {
+    data_entry: {
+      value: generate_random_value(selected_sensor[:category]).to_s,
+      data_type_attributes: {
+        typeName: selected_sensor[:category].capitalize,
+        scale: selected_sensor[:category] == "temperature" ? "C" : "AQI"
+      },
+      time_of_sample_attributes: {
+        date: Time.now.utc.iso8601
+      },
+      device_attributes: selected_device.slice(
+        :manufacturer_name, :firmware_version, :software_version, :model, :serial_number, :friendly_name, :categories, :custom_id, :description
+      ),
+      sensor_attributes: selected_sensor
+    }
+  }
+end
+
+# Endpoint for posting data (replace with your actual endpoint URL)
+endpoint_url = "http://127.0.0.1:3000/data_entries"
+
+# Loop to send multiple simulated requests
+100.times do |i|
+  # Generate data payload
+  payload = generate_payload(devices)
+
+  # Post data payload
+  response = HTTParty.post(endpoint_url,
+                           body: payload.to_json,
+                           headers: { 'Content-Type' => 'application/json' })
+
+  # Output response details
+  puts "Request ##{i + 1} - Status: #{response.code} - Response: #{response.body}"
+
+  # Delay between requests
+  sleep(10)
+end
+

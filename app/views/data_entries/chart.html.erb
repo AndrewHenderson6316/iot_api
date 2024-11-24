@@ -1,0 +1,94 @@
+<meta http-equiv="refresh" content="10">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devices and Sensors</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+    .device-container {
+      background-color: #ffffff;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 15px;
+      margin: 15px auto;
+      width: 90%;
+      max-width: 600px;
+    }
+    .device-container h2 {
+      color: #495057;
+      font-size: 20px;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .device-container h3 {
+      color: #6c757d;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    ul li {
+      padding: 10px 0;
+      border-bottom: 1px solid #dee2e6;
+    }
+    ul li:last-child {
+      border-bottom: none;
+    }
+    ul li b {
+      color: #343a40;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Devices and Sensors</h1>
+
+<% # Group data entries by friendly_name instead of device_id %>
+<%
+grouped_by_device = @data_entries.group_by { |entry| entry.device&.friendly_name || "Unnamed Device" }
+
+grouped_by_device.each do |friendly_name, entries|
+  sensors = entries.group_by { |entry| entry.sensor_id }.transform_values do |sensor_entries|
+    sensor_entries.max_by { |entry| entry.time_of_sample.date }
+  end
+%>
+
+<div class="device-container">
+  <h2>Device: <%= friendly_name %></h2>
+  <h3>Sensors:</h3>
+  <ul>
+    <% sensors.each do |sensor_id, most_recent_entry| %>
+      <% sensor = most_recent_entry.sensor %>
+      <% data_type = most_recent_entry.data_type %>
+      <% time_of_sample = most_recent_entry.time_of_sample %>
+      <li>
+        <b>Sensor Serial Number:</b> <%= sensor.serial_number %><br>
+        <b>Sensor Category:</b> <%= sensor.category %><br>
+        <b>Value:</b> <%= most_recent_entry.value %><br>
+        <b>Data Type:</b> <%= data_type.typeName %><br>
+        <b>Last Updated:</b> <%= time_ago_in_words(time_of_sample.date) %> ago
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<% end %>
+
+</body>
+</html>
