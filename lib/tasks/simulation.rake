@@ -9,6 +9,7 @@ require 'json'
 
     # Define a method to generate random IoT device data
     def generate_device_data
+      custom_ids =["object 1", "name of thing", "this is a name"]
       manufacturer_names = ["Manufacturer A", "Manufacturer B", "Manufacturer C"]
       friendly_names = ["Living Room Sensor", "Bedroom Light", "Kitchen Monitor"]
       categories = ["LIGHT", "TEMPERATURE", "AIR_QUALITY"]
@@ -16,7 +17,7 @@ require 'json'
       serial_numbers = Array.new(10) { (0...8).map { (65 + rand(26)).chr }.join }
       type_names = ["CARBON MONOXIDE", "TEMPERATURE", "HUMIDITY"]
       scales = ["PPM", "C", "%"]
-
+      puts friendly_names.sample
       {
         data_entry: {
           value: rand(5..15).to_s, # Random value for simulation
@@ -30,10 +31,14 @@ require 'json'
           device_attributes: {
             manufacturer_name: manufacturer_names.sample,
             firmware_version: "1.#{rand(0..9)}.#{rand(0..9)}",
+            software_version: "1.#{rand(0..9)}.#{rand(0..9)}",
             model: models.sample,
             serial_number: serial_numbers.sample,
             friendly_name: friendly_names.sample,
-            categories: categories.sample
+            categories: categories.sample,
+            custom_id: custom_ids.sample,
+            description: "description",
+            catagories: "words words words"
           },
           sensor_attributes: {
             manufacturer_name: manufacturer_names.sample,
