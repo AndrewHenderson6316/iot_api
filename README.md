@@ -150,7 +150,3 @@ This project serves as a prototype and can be extended in the following ways:
 - **Geographical Data**: Incorporate location metadata for devices.
 
 ---
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
