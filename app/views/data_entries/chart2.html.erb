@@ -28,7 +28,7 @@
       justify-content: center;
     }
     .chart-container {
-      flex: 1 1 300px; /* Minimum width of 300px */
+      flex: 1 1 300px;
       max-width: 400px;
       height: 400px;
     }
@@ -45,13 +45,20 @@
   <% grouped_by_device = @data_entries.group_by { |entry| entry.device&.friendly_name || "Unnamed Device" } %>
 
   <% grouped_by_device.each do |friendly_name, entries| %>
+    <% device = entries.first.device %>
     <div class="device-section">
       <h2>Device: <%= friendly_name %></h2>
+      <p><b>Manufacturer:</b> <%= device.manufacturer_name %></p>
+      <p><b>Model:</b> <%= device.model %></p>
       <div class="sensor-container">
         <% grouped_by_sensor = entries.group_by { |entry| entry.sensor_id } %>
         <% grouped_by_sensor.each do |sensor_id, sensor_entries| %>
+          <% sensor = sensor_entries.first.sensor %>
+          <% scale = sensor_entries.first.data_type&.scale || "Unknown" %>
           <div class="chart-container">
             <canvas id="chart-device-<%= friendly_name.parameterize %>-sensor-<%= sensor_id %>"></canvas>
+            <p><b>Sensor Manufacturer:</b> <%= sensor.manufacturer_name %></p>
+            <p><b>Sensor Serial Number:</b> <%= sensor.serial_number %></p>
             <script>
   document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById("chart-device-<%= friendly_name.parameterize %>-sensor-<%= sensor_id %>").getContext("2d");
@@ -59,8 +66,8 @@
     // Current time for comparison
     const now = new Date();
 
-    // Filter out entries older than a threshold (10 minutes)
-    const THRESHOLD_MINUTES = 5; // Adjust as needed
+    // Filter out entries older than a threshold (5 minutes)
+    const THRESHOLD_MINUTES = 5;
     const filteredData = <%= sensor_entries.map do |entry|
       {
         x: entry.created_at,
@@ -68,7 +75,7 @@
       }
     end.to_json.html_safe %>.filter(point => {
       const pointTime = new Date(point.x);
-      return now - pointTime <= THRESHOLD_MINUTES * 60 * 1000; // Keep only recent data
+      return now - pointTime <= THRESHOLD_MINUTES * 60 * 1000;
     });
 
     if (filteredData.length === 0) {
@@ -76,15 +83,16 @@
       return;
     }
 
-    const minTime = new Date(now.getTime() - THRESHOLD_MINUTES * 60 * 1000); // Start time for x-axis
-    const maxTime = now; // End time for x-axis
+    const minTime = new Date(now.getTime() - THRESHOLD_MINUTES * 60 * 1000);
+    const maxTime = now;
 
-    const sensorCategory = "<%= sensor_entries.first.sensor&.category || 'unknown' %>";
-    
+    const sensorCategory = "<%= sensor.category || 'unknown' %>";
+    const unitScale = "<%= scale %>"; // Correctly serialize the scale variable
+
     // Define y-axis range based on sensor category
     const yAxisRange = sensorCategory === "temperature" 
-      ? { min: 0, max: 30 } // Temperature range
-      : { min: 0, max: 100 }; // Default/Air Quality range
+      ? { min: 0, max: 30 }
+      : { min: 0, max: 100 };
 
     new Chart(ctx, {
       type: 'line',
@@ -108,9 +116,9 @@
           x: {
             type: 'time',
             time: {
-              unit: 'minute', // Adjust granularity as needed
-              min: minTime, // Set minimum time for the x-axis
-              max: maxTime, // Set maximum time for the x-axis
+              unit: 'minute',
+              min: minTime,
+              max: maxTime
             },
             title: {
               display: true,
@@ -118,14 +126,14 @@
             }
           },
           y: {
-            min: yAxisRange.min, // Dynamically set minimum y-axis value
-            max: yAxisRange.max, // Dynamically set maximum y-axis value
+            min: yAxisRange.min,
+            max: yAxisRange.max,
             ticks: {
-              stepSize: 5 // Adjust the step size as needed
+              stepSize: 5
             },
             title: {
               display: true,
-              text: 'Value'
+              text: `Value (${unitScale})` // Display unit of measurement dynamically
             }
           }
         },
