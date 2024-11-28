@@ -149,4 +149,4 @@ This project serves as a prototype and can be extended in the following ways:
 - **Real-Time Updates**: Use WebSockets or server-sent events for live data streaming.
 - **Geographical Data**: Incorporate location metadata for devices.
 
----
+
