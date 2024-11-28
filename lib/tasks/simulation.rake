@@ -54,9 +54,9 @@ devices = [
 def generate_random_value(category)
   case category
   when "temperature"
-    rand(15..30) # Temperature in Celsius
+    rand(18..22) # Temperature in Celsius
   when "air quality"
-    rand(0..100) # Air Quality Index (AQI)
+    rand(35..45) # Air Quality Index (AQI)
   else
     rand(1..50) # Default random value
   end
