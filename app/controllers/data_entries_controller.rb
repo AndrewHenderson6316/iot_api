@@ -20,6 +20,14 @@ class DataEntriesController < ApplicationController
     
   end
 
+  def chart2
+    @data_entries = DataEntry.includes(:device, :data_type, :sensor, :time_of_sample).all
+    
+    @message = "Hello World" # Pass the message to the view
+    render "data_entries/chart2"
+    
+  end
+
   # POST /groups
   def create
     # Permit nested parameters for data creation

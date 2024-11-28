@@ -102,6 +102,6 @@ endpoint_url = "http://127.0.0.1:3000/data_entries"
   puts "Request ##{i + 1} - Status: #{response.code} - Response: #{response.body}"
 
   # Delay between requests
-  sleep(10)
+  sleep(1)
 end
 

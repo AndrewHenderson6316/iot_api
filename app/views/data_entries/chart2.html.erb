@@ -1,103 +1,148 @@
+<meta http-equiv="refresh" content="1">
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sensors Chart</title>
+  <title>Devices and Sensors Graph</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
+      background-color: #f8f9fa;
+      color: #333;
     }
     h1 {
       text-align: center;
       color: #007bff;
-      margin-bottom: 20px;
+    }
+    .device-section {
+      margin-bottom: 40px;
+    }
+    .sensor-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
     }
     .chart-container {
-      width: 80%;
-      margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      background-color: #f8f9fa;
+      flex: 1 1 300px; /* Minimum width of 300px */
+      max-width: 400px;
+      height: 400px;
     }
     canvas {
-      max-width: 100%;
-      height: 400px;
+      max-height: 100%;
     }
   </style>
 </head>
 <body>
-  <h1>Sensors Data Chart</h1>
-  <div class="chart-container">
-    <canvas id="sensorChart"></canvas>
-  </div>
 
-  <script>
-    // Backend data passed via JSON (replace @data_by_sensor with ERB data)
-    const sensorData = <%= @data_by_sensor.to_json.html_safe %>;
+<h1>Device and Sensor Data Graphs</h1>
 
-    // Extract data for Chart.js
-    const labels = []; // Timestamps for the x-axis
-    const datasets = []; // Data for each sensor
+<% if @data_entries.present? %>
+  <% grouped_by_device = @data_entries.group_by { |entry| entry.device&.friendly_name || "Unnamed Device" } %>
 
-    Object.entries(sensorData).forEach(([sensorSerial, data], index) => {
-      const timestamps = data.map(entry => new Date(entry.timestamp).toLocaleString());
-      const values = data.map(entry => entry.value);
+  <% grouped_by_device.each do |friendly_name, entries| %>
+    <div class="device-section">
+      <h2>Device: <%= friendly_name %></h2>
+      <div class="sensor-container">
+        <% grouped_by_sensor = entries.group_by { |entry| entry.sensor_id } %>
+        <% grouped_by_sensor.each do |sensor_id, sensor_entries| %>
+          <div class="chart-container">
+            <canvas id="chart-device-<%= friendly_name.parameterize %>-sensor-<%= sensor_id %>"></canvas>
+            <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById("chart-device-<%= friendly_name.parameterize %>-sensor-<%= sensor_id %>").getContext("2d");
 
-      // Update global labels if they are not already set
-      if (labels.length === 0) labels.push(...timestamps);
+    // Current time for comparison
+    const now = new Date();
 
-      // Add a dataset for each sensor
-      datasets.push({
-        label: `Sensor ${sensorSerial}`,
-        data: values,
-        borderColor: `hsl(${(index * 60) % 360}, 70%, 50%)`,
-        backgroundColor: `hsl(${(index * 60) % 360}, 70%, 90%)`,
-        fill: false,
-        tension: 0.1
-      });
+    // Filter out entries older than a threshold (10 minutes)
+    const THRESHOLD_MINUTES = 5; // Adjust as needed
+    const filteredData = <%= sensor_entries.map do |entry|
+      {
+        x: entry.created_at,
+        y: entry.value
+      }
+    end.to_json.html_safe %>.filter(point => {
+      const pointTime = new Date(point.x);
+      return now - pointTime <= THRESHOLD_MINUTES * 60 * 1000; // Keep only recent data
     });
 
-    // Render the chart
-    const ctx = document.getElementById('sensorChart').getContext('2d');
+    if (filteredData.length === 0) {
+      console.warn("No recent data for Sensor ID: <%= sensor_id %>");
+      return;
+    }
+
+    const minTime = new Date(now.getTime() - THRESHOLD_MINUTES * 60 * 1000); // Start time for x-axis
+    const maxTime = now; // End time for x-axis
+
+    const sensorCategory = "<%= sensor_entries.first.sensor&.category || 'unknown' %>";
+    
+    // Define y-axis range based on sensor category
+    const yAxisRange = sensorCategory === "temperature" 
+      ? { min: 0, max: 30 } // Temperature range
+      : { min: 0, max: 100 }; // Default/Air Quality range
+
     new Chart(ctx, {
       type: 'line',
       data: {
-        labels: labels,
-        datasets: datasets
+        datasets: [{
+          label: `Sensor ID: <%= sensor_id %> (${sensorCategory})`,
+          data: filteredData,
+          borderColor: '#000000',
+          pointRadius: 3,
+          fill: false,
+          tension: 0.1
+        }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         plugins: {
-          legend: {
-            position: 'top'
-          },
-          title: {
-            display: true,
-            text: 'Sensor Historical Data Comparison'
-          }
+          legend: { display: true, position: 'top' }
         },
         scales: {
           x: {
+            type: 'time',
+            time: {
+              unit: 'minute', // Adjust granularity as needed
+              min: minTime, // Set minimum time for the x-axis
+              max: maxTime, // Set maximum time for the x-axis
+            },
             title: {
               display: true,
-              text: 'Timestamp'
+              text: 'Time'
             }
           },
           y: {
+            min: yAxisRange.min, // Dynamically set minimum y-axis value
+            max: yAxisRange.max, // Dynamically set maximum y-axis value
+            ticks: {
+              stepSize: 5 // Adjust the step size as needed
+            },
             title: {
               display: true,
               text: 'Value'
-            },
-            beginAtZero: true
+            }
           }
-        }
+        },
+        animation: false
       }
     });
-  </script>
+  });
+</script>
+
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <p>No data available at the moment.</p>
+<% end %>
+
 </body>
 </html>
