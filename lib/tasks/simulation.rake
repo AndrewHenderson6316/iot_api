@@ -89,7 +89,7 @@ end
 endpoint_url = "http://127.0.0.1:3000/data_entries"
 
 # Loop to send multiple simulated requests
-100.times do |i|
+1000.times do |i|
   # Generate data payload
   payload = generate_payload(devices)
 
