@@ -1,34 +1,43 @@
 class DataEntriesController < ApplicationController
+    # Callback to set the data entry instance for specific actions
     before_action :set_entry, only: %i[ show update destory ]
     
+    # GET /data_entries
+    # Fetches all data entries and renders them as JSON
     def index 
         @data_entries = DataEntry.all
 
         render json: @data_entries
     end
 
-  # GET /groups/1
+  # GET /data_entries/:id
+  # Fetches a specific data entry and renders it as JSON
   def show
     render json: @data_entry
   end
 
+  # GET /data_entries/chart
+  # Prepares data for rendering the chart table view for simulation visulalisation
   def chart
     @data_entries = DataEntry.includes(:device, :data_type, :sensor, :time_of_sample).all
     
-    @message = "Hello World" # Pass the message to the view
+    @message = "Hello World" # Example message to pass to the view
     render "data_entries/chart"
     
   end
 
+  # GET /data_entries/chart
+  # Prepares data for rendering the chart graphs view for simulation visulalisation
   def chart2
     @data_entries = DataEntry.includes(:device, :data_type, :sensor, :time_of_sample).all
     
-    @message = "Hello World" # Pass the message to the view
+    @message = "Hello World" # Example message to pass to the view
     render "data_entries/chart2"
     
   end
 
-  # POST /groups
+  # POST /data_entries
+  # Creates a new data entry with nested attributes and associations
   def create
     # Permit nested parameters for data creation
     #data = params.require(:data_entry).permit(:value, data_type: {}, device: {}, time_of_sample: {}, sensor: {})
@@ -37,7 +46,7 @@ class DataEntriesController < ApplicationController
       # Logging the start of the transaction
       Rails.logger.debug("Starting transaction...")
   
-      # DataType
+      # Handle DataType creation or retrieval
       Rails.logger.debug("Received data_type: #{data[:data_type_attributes]}")
       data_type = DataType.find_or_create_by!(typeName: data[:data_type_attributes][:typeName]) do |dt|
         dt.scale = data[:data_type_attributes][:scale]
@@ -45,7 +54,7 @@ class DataEntriesController < ApplicationController
       end
       Rails.logger.debug("Created/Found data_type: #{data_type.inspect}")
   
-      # Device
+      # Handle Device creation or retrieval
       Rails.logger.debug("Received device: #{data[:device_attributes]}")
       device = Device.find_or_create_by!(custom_id: data[:device_attributes][:custom_id]) do |dev|
         dev.manufacturer_name = data[:device_attributes][:manufacturer_name]
@@ -59,7 +68,7 @@ class DataEntriesController < ApplicationController
       end
       Rails.logger.debug("Created/Found device: #{device.inspect}")
   
-      # Sensor
+      # Handle Sensor creation or retrieval
       Rails.logger.debug("Received sensor: #{data[:sensor_attributes]}")
       sensor = Sensor.find_or_create_by!(serial_number: data[:sensor_attributes][:serial_number]) do |sen|
         sen.manufacturer_name = data[:sensor_attributes][:manufacturer_name]
@@ -69,11 +78,11 @@ class DataEntriesController < ApplicationController
       end
       Rails.logger.debug("Created/Found sensor: #{sensor.inspect}")
   
-      # TimeOfSample
+      # Handle TimeOfSample creation or retrieval
       time_of_sample = TimeOfSample.find_or_create_by!(date: data[:time_of_sample_attributes][:date])
       Rails.logger.debug("Created/Found time_of_sample: #{time_of_sample.inspect}")
   
-      # Create DataEntry with all related records
+      # Create the main DataEntry record
       @data_entry = DataEntry.create!(
         value: data[:value],
         data_type_id: data_type.id,
@@ -84,7 +93,7 @@ class DataEntriesController < ApplicationController
       Rails.logger.debug("Created data_entry: #{@data_entry.inspect}")
     end
   
-    # Render the response based on save status
+    # Respond with the created data entry or handle validation errors
     if @data_entry.save
       render json: @data_entry, status: :created
     else
@@ -93,7 +102,8 @@ class DataEntriesController < ApplicationController
     end
   end
 
-  # PATCH/PUT 
+  # PATCH/PUT /data_entries/:id
+  # Updates a specific data entry
   def update
     if @data_entry.update(data_entry_params)
       render json: @data_entry
@@ -102,13 +112,14 @@ class DataEntriesController < ApplicationController
     end
   end
 
-  # DELETE 
+  # DELETE /data_entries/:id
+  # Deletes a specific data entry
   def destroy
     @data_entry.destroy
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
+   # Callback to set a data entry instance based on the provided ID
     def set_entry
       @data_entry = DataEntry.find(params[:id])
     end

@@ -63,24 +63,25 @@ def generate_random_value(category)
 end
 
 # Function to generate a payload
+# Creates a JSON-serializable structure for data submission, selecting random devices and sensors.
 def generate_payload(devices)
   selected_device = devices.sample # Select a random device
   selected_sensor = selected_device[:sensors].sample # Select a random sensor from the device
 
   {
     data_entry: {
-      value: generate_random_value(selected_sensor[:category]).to_s,
+      value: generate_random_value(selected_sensor[:category]).to_s, # Sensor value as a string
       data_type_attributes: {
-        typeName: selected_sensor[:category].capitalize,
-        scale: selected_sensor[:category] == "temperature" ? "C" : "AQI"
+        typeName: selected_sensor[:category].capitalize, # Category name, e.g., "Temperature"
+        scale: selected_sensor[:category] == "temperature" ? "C" : "AQI" # Unit scale based on category
       },
       time_of_sample_attributes: {
-        date: Time.now.utc.iso8601
+        date: Time.now.utc.iso8601 # Timestamp in ISO 8601 format
       },
       device_attributes: selected_device.slice(
         :manufacturer_name, :firmware_version, :software_version, :model, :serial_number, :friendly_name, :categories, :custom_id, :description
-      ),
-      sensor_attributes: selected_sensor
+      ), # Select relevant device metadata
+      sensor_attributes: selected_sensor # Include sensor details
     }
   }
 end

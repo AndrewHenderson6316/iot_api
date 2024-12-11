@@ -59,36 +59,55 @@
 
 <h1>Devices and Sensors</h1>
 
-<% # Group data entries by friendly_name instead of device_id %>
 <%
+# Group all data entries by the friendly name of their associated device
+# If a device doesn't have a friendly name, default to "Unnamed Device"
 grouped_by_device = @data_entries.group_by { |entry| entry.device&.friendly_name || "Unnamed Device" }
 
+# Iterate through each group of entries, where each group corresponds to a device
 grouped_by_device.each do |friendly_name, entries|
+  # Further group the entries by the unique sensor ID
+  # For each sensor, select the most recent entry based on the time of sample
   sensors = entries.group_by { |entry| entry.sensor_id }.transform_values do |sensor_entries|
-    sensor_entries.max_by { |entry| entry.time_of_sample.date }
+    sensor_entries.max_by { |entry| entry.time_of_sample.date } # Find the latest entry for each sensor
   end
 %>
 
 <div class="device-container">
+  <!-- Display the friendly name of the device -->
   <h2>Device: <%= friendly_name %></h2>
+  
+  <!-- Section heading for the list of sensors associated with the device -->
   <h3>Sensors:</h3>
+  
   <ul>
+    <!-- Iterate through each sensor's most recent entry -->
     <% sensors.each do |sensor_id, most_recent_entry| %>
+      <!-- Extract the sensor object from the most recent entry -->
       <% sensor = most_recent_entry.sensor %>
+      <!-- Extract the data type object from the most recent entry -->
       <% data_type = most_recent_entry.data_type %>
+      <!-- Extract the time of sample object from the most recent entry -->
       <% time_of_sample = most_recent_entry.time_of_sample %>
+      
+      <!-- Display details about the sensor and its most recent reading -->
       <li>
+        <!-- Show the sensor's unique serial number -->
         <b>Sensor Serial Number:</b> <%= sensor.serial_number %><br>
+        <!-- Display the category of the sensor, e.g., "temperature" or "air quality" -->
         <b>Sensor Category:</b> <%= sensor.category %><br>
+        <!-- Show the most recent recorded value for this sensor -->
         <b>Value:</b> <%= most_recent_entry.value %><br>
+        <!-- Show the type of data the sensor is capturing -->
         <b>Data Type:</b> <%= data_type.typeName %><br>
+        <!-- Display how long ago the reading was taken -->
         <b>Last Updated:</b> <%= time_ago_in_words(time_of_sample.date) %> ago
       </li>
     <% end %>
   </ul>
 </div>
 
-<% end %>
+<% end %> <!-- End of iteration over devices -->
 
 </body>
 </html>

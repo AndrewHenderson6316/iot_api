@@ -42,24 +42,30 @@
 <h1>Device and Sensor Data Graphs</h1>
 
 <% if @data_entries.present? %>
+    <!-- Group data entries by device's friendly name -->
   <% grouped_by_device = @data_entries.group_by { |entry| entry.device&.friendly_name || "Unnamed Device" } %>
 
   <% grouped_by_device.each do |friendly_name, entries| %>
     <% device = entries.first.device %>
     <div class="device-section">
+        <!-- Display device information -->
       <h2>Device: <%= friendly_name %></h2>
       <p><b>Manufacturer:</b> <%= device.manufacturer_name %></p>
       <p><b>Model:</b> <%= device.model %></p>
+
       <div class="sensor-container">
+        <!-- Group data entries by sensor ID -->
         <% grouped_by_sensor = entries.group_by { |entry| entry.sensor_id } %>
         <% grouped_by_sensor.each do |sensor_id, sensor_entries| %>
           <% sensor = sensor_entries.first.sensor %>
           <% scale = sensor_entries.first.data_type&.scale || "Unknown" %>
           <div class="chart-container">
+            <!-- Canvas for displaying the sensor chart -->
             <canvas id="chart-device-<%= friendly_name.parameterize %>-sensor-<%= sensor_id %>"></canvas>
             <p><b>Sensor Manufacturer:</b> <%= sensor.manufacturer_name %></p>
             <p><b>Sensor Serial Number:</b> <%= sensor.serial_number %></p>
             <script>
+// Wait for the DOM to fully load before rendering charts
   document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById("chart-device-<%= friendly_name.parameterize %>-sensor-<%= sensor_id %>").getContext("2d");
 
@@ -78,6 +84,7 @@
       return now - pointTime <= THRESHOLD_MINUTES * 60 * 1000;
     });
 
+    // Skip rendering the chart if there is no recent data
     if (filteredData.length === 0) {
       console.warn("No recent data for Sensor ID: <%= sensor_id %>");
       return;
@@ -86,6 +93,7 @@
     const minTime = new Date(now.getTime() - THRESHOLD_MINUTES * 60 * 1000);
     const maxTime = now;
 
+    // Determine sensor category and unit scale
     const sensorCategory = "<%= sensor.category || 'unknown' %>";
     const unitScale = "<%= scale %>"; // Correctly serialize the scale variable
 
@@ -94,6 +102,8 @@
       ? { min: 0, max: 30 }
       : { min: 0, max: 100 };
 
+
+    // Create and render the Chart.js line chart
     new Chart(ctx, {
       type: 'line',
       data: {
@@ -149,6 +159,7 @@
     </div>
   <% end %>
 <% else %>
+<!-- Message when there are no data entries -->
   <p>No data available at the moment.</p>
 <% end %>
 
